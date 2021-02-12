@@ -295,7 +295,7 @@ mse_lm = mean((lm_pred - test_df$Solubility)^2)
 <!-- end list -->
 
   - Use `glmnet` to identify tuning parameters for \(\lambda\), then fit
-    a 10-fold CV ridge model:
+    a 10-fold CV ridge model on training data:
 
 <!-- end list -->
 
@@ -309,7 +309,7 @@ tuning_model = cv.glmnet(x, y, alpha = 0, nlambda = 200)
 plot(tuning_model)
 ```
 
-<img src="HW1_files/figure-gfm/unnamed-chunk-1-1.png" width="95%" />
+<img src="HW1_files/figure-gfm/ridge-1.png" width="95%" />
 
 ``` r
 #Set lambda parameters:
@@ -319,7 +319,7 @@ plot(model_ridge)
 abline(h = (model_ridge$cvm + model_ridge$cvsd)[which.min(model_ridge$cvm)], col = 3, lwd = 0.1)
 ```
 
-<img src="HW1_files/figure-gfm/unnamed-chunk-1-2.png" width="95%" />
+<img src="HW1_files/figure-gfm/ridge-2.png" width="95%" />
 
 ``` r
 coef_ridge = predict(model_ridge, s = model_ridge$lambda.min, type = "coefficients")
@@ -583,3 +583,294 @@ mse_ridge = mean((ridge_pred - test_df$Solubility)^2)
 3)  Fit a lasso model on the training data, with \(\lambda\) chosen by
     cross-validation. Report the test error and the number of non-zero
     coeffcient estimates in your model.
+
+<!-- end list -->
+
+  - Use `glmnet` to identify tuning parameters for \(\lambda\), then fit
+    a 10-fold CV lasso model on training data:
+
+<!-- end list -->
+
+``` r
+set.seed(37564)
+
+tuning_model2 = cv.glmnet(x, y, alpha = 1, nlambda = 200)
+plot(tuning_model2)
+```
+
+<img src="HW1_files/figure-gfm/laso-1.png" width="95%" />
+
+``` r
+#Set lambda parameters:
+model_lasso = cv.glmnet(x, y, alpha = 1, lambda = exp(seq(1, -8, length = 100)))
+
+plot(model_lasso)
+abline(h = (model_lasso$cvm + model_lasso$cvsd)[which.min(model_lasso$cvm)], col = 3, lwd = 0.1)
+```
+
+<img src="HW1_files/figure-gfm/laso-2.png" width="95%" />
+
+``` r
+coef_lasso = predict(model_lasso, s = model_lasso$lambda.min, type = "coefficients")
+pred_names = coef_ridge %>% broom::tidy() %>% select(row)
+coef_lasso[ ,1] %>% 
+  as_tibble() %>% 
+  cbind(pred_names) %>% 
+  select(row, value) %>% 
+  knitr::kable(col.names = c("Predictor", "Beta Value"))
+```
+
+| Predictor         |  Beta Value |
+| :---------------- | ----------: |
+| (Intercept)       |   7.6392836 |
+| FP001             |   0.0000000 |
+| FP002             |   0.2258217 |
+| FP003             | \-0.0032851 |
+| FP004             | \-0.1577687 |
+| FP005             |   0.0000000 |
+| FP006             | \-0.0021433 |
+| FP007             |   0.0000000 |
+| FP008             |   0.0000000 |
+| FP009             |   0.0000000 |
+| FP010             |   0.0000000 |
+| FP011             |   0.0000000 |
+| FP012             | \-0.0017521 |
+| FP013             | \-0.0404272 |
+| FP014             |   0.0000000 |
+| FP015             | \-0.0328297 |
+| FP016             | \-0.0391358 |
+| FP017             | \-0.0592403 |
+| FP018             | \-0.0005796 |
+| FP019             |   0.0000000 |
+| FP020             |   0.0000000 |
+| FP021             |   0.0000000 |
+| FP022             |   0.0518513 |
+| FP023             | \-0.0838433 |
+| FP024             |   0.0000000 |
+| FP025             | \-0.0081192 |
+| FP026             |   0.2879538 |
+| FP027             |   0.1991662 |
+| FP028             |   0.0000000 |
+| FP029             |   0.0000000 |
+| FP030             | \-0.0815999 |
+| FP031             |   0.0672844 |
+| FP032             |   0.0000000 |
+| FP033             |   0.0600811 |
+| FP034             |   0.0000000 |
+| FP035             |   0.0000000 |
+| FP036             |   0.0000000 |
+| FP037             |   0.1808299 |
+| FP038             |   0.0000000 |
+| FP039             | \-0.4012678 |
+| FP040             |   0.3484727 |
+| FP041             |   0.0000000 |
+| FP042             |   0.0000049 |
+| FP043             |   0.0348049 |
+| FP044             | \-0.2873010 |
+| FP045             |   0.0273934 |
+| FP046             |   0.0000000 |
+| FP047             |   0.0000000 |
+| FP048             |   0.0000000 |
+| FP049             |   0.2711987 |
+| FP050             | \-0.0995753 |
+| FP051             |   0.0000000 |
+| FP052             |   0.0000000 |
+| FP053             |   0.1920479 |
+| FP054             | \-0.0149547 |
+| FP055             |   0.0000000 |
+| FP056             |   0.0000000 |
+| FP057             | \-0.0405860 |
+| FP058             |   0.0000000 |
+| FP059             | \-0.3072630 |
+| FP060             |   0.0000000 |
+| FP061             | \-0.0724201 |
+| FP062             |   0.0000000 |
+| FP063             |   0.0911968 |
+| FP064             |   0.1629825 |
+| FP065             | \-0.0870253 |
+| FP066             |   0.0000000 |
+| FP067             |   0.0000000 |
+| FP068             |   0.0000000 |
+| FP069             |   0.0880163 |
+| FP070             | \-0.0867123 |
+| FP071             |   0.0411552 |
+| FP072             |   0.0000000 |
+| FP073             |   0.0000000 |
+| FP074             |   0.0896498 |
+| FP075             |   0.1874845 |
+| FP076             |   0.0000000 |
+| FP077             |   0.0050040 |
+| FP078             | \-0.0305214 |
+| FP079             |   0.0914875 |
+| FP080             |   0.0000000 |
+| FP081             | \-0.1675334 |
+| FP082             |   0.0661504 |
+| FP083             | \-0.2894496 |
+| FP084             |   0.1974237 |
+| FP085             | \-0.2820006 |
+| FP086             |   0.0000000 |
+| FP087             |   0.0000000 |
+| FP088             |   0.0855436 |
+| FP089             |   0.0000000 |
+| FP090             |   0.0000000 |
+| FP091             |   0.0000000 |
+| FP092             |   0.0000000 |
+| FP093             |   0.0733151 |
+| FP094             | \-0.1306674 |
+| FP095             |   0.0000000 |
+| FP096             |   0.0000000 |
+| FP097             |   0.0000000 |
+| FP098             | \-0.0847384 |
+| FP099             |   0.2138949 |
+| FP100             |   0.0000000 |
+| FP101             |   0.0086630 |
+| FP102             |   0.0000000 |
+| FP103             | \-0.0464465 |
+| FP104             | \-0.0689700 |
+| FP105             |   0.0000000 |
+| FP106             |   0.0000000 |
+| FP107             |   0.0000000 |
+| FP108             |   0.0000000 |
+| FP109             |   0.1439505 |
+| FP110             |   0.0000000 |
+| FP111             | \-0.3060564 |
+| FP112             |   0.0000000 |
+| FP113             |   0.0413053 |
+| FP114             |   0.0000000 |
+| FP115             |   0.0000000 |
+| FP116             |   0.1466197 |
+| FP117             |   0.0000000 |
+| FP118             | \-0.0344596 |
+| FP119             |   0.0000000 |
+| FP120             |   0.0000000 |
+| FP121             |   0.0000000 |
+| FP122             |   0.1668684 |
+| FP123             |   0.0000000 |
+| FP124             |   0.3353382 |
+| FP125             |   0.0169246 |
+| FP126             | \-0.1006276 |
+| FP127             | \-0.3995390 |
+| FP128             | \-0.1824446 |
+| FP129             |   0.0000000 |
+| FP130             | \-0.0343466 |
+| FP131             |   0.1329220 |
+| FP132             |   0.0000000 |
+| FP133             | \-0.0721592 |
+| FP134             |   0.0000000 |
+| FP135             |   0.2487308 |
+| FP136             |   0.0000000 |
+| FP137             |   0.3356434 |
+| FP138             |   0.1489835 |
+| FP139             |   0.0000000 |
+| FP140             |   0.0000000 |
+| FP141             | \-0.1233372 |
+| FP142             |   0.4546326 |
+| FP143             |   0.0108984 |
+| FP144             |   0.0000000 |
+| FP145             | \-0.0646536 |
+| FP146             |   0.0000000 |
+| FP147             |   0.1194408 |
+| FP148             |   0.0000000 |
+| FP149             |   0.0000000 |
+| FP150             |   0.0000000 |
+| FP151             |   0.0000000 |
+| FP152             | \-0.0038969 |
+| FP153             |   0.0000000 |
+| FP154             | \-0.4194576 |
+| FP155             |   0.0000000 |
+| FP156             | \-0.0343878 |
+| FP157             |   0.0000000 |
+| FP158             |   0.0000000 |
+| FP159             |   0.0000000 |
+| FP160             |   0.0000000 |
+| FP161             |   0.0000000 |
+| FP162             |   0.0000000 |
+| FP163             |   0.0693447 |
+| FP164             |   0.2730851 |
+| FP165             |   0.0000000 |
+| FP166             |   0.0189896 |
+| FP167             | \-0.0019522 |
+| FP168             |   0.0000000 |
+| FP169             | \-0.0862967 |
+| FP170             |   0.0430381 |
+| FP171             |   0.1463732 |
+| FP172             | \-0.5458456 |
+| FP173             |   0.2614691 |
+| FP174             | \-0.0302677 |
+| FP175             |   0.0000000 |
+| FP176             |   0.2270015 |
+| FP177             |   0.0000000 |
+| FP178             |   0.0000000 |
+| FP179             |   0.0000000 |
+| FP180             | \-0.0874390 |
+| FP181             |   0.0000000 |
+| FP182             |   0.0000000 |
+| FP183             |   0.0000000 |
+| FP184             |   0.2126950 |
+| FP185             |   0.0000000 |
+| FP186             | \-0.0691976 |
+| FP187             |   0.0409278 |
+| FP188             |   0.2283232 |
+| FP189             |   0.0024564 |
+| FP190             |   0.2328354 |
+| FP191             |   0.0000000 |
+| FP192             |   0.0116186 |
+| FP193             | \-0.0655374 |
+| FP194             |   0.0000000 |
+| FP195             |   0.0000000 |
+| FP196             |   0.0000000 |
+| FP197             |   0.0000000 |
+| FP198             |   0.0134526 |
+| FP199             |   0.0000000 |
+| FP200             |   0.0000000 |
+| FP201             | \-0.1217599 |
+| FP202             |   0.3695744 |
+| FP203             |   0.0584124 |
+| FP204             | \-0.0861492 |
+| FP205             |   0.0000000 |
+| FP206             | \-0.1236423 |
+| FP207             |   0.0000000 |
+| FP208             |   0.0000000 |
+| MolWeight         | \-1.3448695 |
+| NumAtoms          |   0.0000000 |
+| NumNonHAtoms      | \-0.5777745 |
+| NumBonds          |   0.0000000 |
+| NumNonHBonds      | \-0.6941630 |
+| NumMultBonds      | \-0.1547695 |
+| NumRotBonds       | \-0.1337524 |
+| NumDblBonds       |   0.0000000 |
+| NumAromaticBonds  |   0.0000000 |
+| NumHydrogen       |   0.0273229 |
+| NumCarbon         | \-0.4684399 |
+| NumNitrogen       |   0.0000000 |
+| NumOxygen         |   0.3112170 |
+| NumSulfer         | \-0.2781273 |
+| NumChlorine       | \-0.3841788 |
+| NumHalogen        |   0.0000000 |
+| NumRings          |   0.0000000 |
+| HydrophilicFactor |   0.0000000 |
+| SurfaceArea1      |   0.2512146 |
+| SurfaceArea2      |   0.0000000 |
+
+  - Using the above ridge model, the \(\lambda_{min}\) was found to be
+    **0.0089** and the \(\lambda_{1SE}\) was found to be **0.022**.
+    There are **119** non-zero estimates in the lasso model.
+
+  - Now, calculate the MSE of the lasso model:
+
+<!-- end list -->
+
+``` r
+lasso_pred = predict(model_lasso, newx = x_test, 
+             s = "lambda.min", type = "response")
+mse_lasso = mean((lasso_pred - test_df$Solubility)^2)
+```
+
+  - Therefore, the MSE of this ridge regression model, using
+    \(\lambda_{min}\) with 119 predictors, is **0.4949**.
+
+<!-- end list -->
+
+4)  Fit a principle component regression model on the training data,
+    with M chosen by cross-validation. Report the test error and the
+    value ofM selected by cross-validation.
