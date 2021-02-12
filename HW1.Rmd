@@ -1,0 +1,68 @@
+---
+title: "Homework #1"
+author: "David Nemirovsky"
+output: github_document
+date: 2/14/21
+--- 
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ISLR)
+library(glmnet)
+library(caret)
+library(corrplot)
+library(plotmo)
+
+knitr::opts_chunk$set(
+  fig.width = 7,
+  fig.asp = .6,
+  out.width = "95%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+set.seed(37564)
+```
+
+In this exercise, we will predict solubility of compounds using their chemical structures. The training data are in the file "solubility_train.csv" and the test data are in "solubility_test.csv". Among the 228 predictors, 208 are binary variables that indicate the presence or absence of a particular chemical substructure, 16 are count features, such as the number of bonds or the number of bromine atoms, and 4 are continuous features, such as molecular weight or surface area. The response is in the column "Solubility" (the last column).
+
+ (a) Fit a linear model using least squares on the training data and calculate the mean squared error using the test data.
+
++ First, let's read in the data:
+
+```{r read, message = F}
+train_df = read_csv("solubility_train.csv")
+test_df = read_csv("solubility_test.csv")
+```
+
++ Next, let's create a linear model with 10-fold CV:
+
+```{r lm, warning = F}
+set.seed(37564)
+ctrl = trainControl(method = "cv", number = 10)
+model_lm = train(Solubility~., 
+               data = train_df, 
+               method = "lm", 
+               trControl = ctrl)
+
+model_lm$finalModel$coefficients %>% 
+  broom::tidy() %>% 
+  knitr::kable(col.names = c("Predictor", "Beta Value"))
+```
+
++ Now, let's calculate the MSE using the test data:
+
+```{r mse lm}
+lm_pred = predict(model_lm, newdata = test_df)
+mse_lm = mean((lm_pred - test_df$Solubility)^2)
+```
+
++ Therefore, the MSE of this linear model is **`r round(mse_lm, 4)`**.
