@@ -598,7 +598,7 @@ tuning_model2 = cv.glmnet(x, y, alpha = 1, nlambda = 200)
 plot(tuning_model2)
 ```
 
-<img src="HW1_files/figure-gfm/laso-1.png" width="95%" />
+<img src="HW1_files/figure-gfm/lasso-1.png" width="95%" />
 
 ``` r
 #Set lambda parameters:
@@ -608,7 +608,7 @@ plot(model_lasso)
 abline(h = (model_lasso$cvm + model_lasso$cvsd)[which.min(model_lasso$cvm)], col = 3, lwd = 0.1)
 ```
 
-<img src="HW1_files/figure-gfm/laso-2.png" width="95%" />
+<img src="HW1_files/figure-gfm/lasso-2.png" width="95%" />
 
 ``` r
 coef_lasso = predict(model_lasso, s = model_lasso$lambda.min, type = "coefficients")
@@ -866,7 +866,7 @@ lasso_pred = predict(model_lasso, newx = x_test,
 mse_lasso = mean((lasso_pred - test_df$Solubility)^2)
 ```
 
-  - Therefore, the MSE of this ridge regression model, using
+  - Therefore, the MSE of this lasso regression model, using
     \(\lambda_{min}\) with 119 predictors, is **0.4949**.
 
 <!-- end list -->
@@ -874,3 +874,62 @@ mse_lasso = mean((lasso_pred - test_df$Solubility)^2)
 4)  Fit a principle component regression model on the training data,
     with M chosen by cross-validation. Report the test error and the
     value ofM selected by cross-validation.
+
+<!-- end list -->
+
+  - Using `pls` package, fit a PCR model on the training data to
+    determine appropriate number of components that best fit the model:
+
+<!-- end list -->
+
+``` r
+set.seed(37564)
+model_pcr = pcr(Solubility ~ ., data = train_df, scale = TRUE, validation = "CV")
+cv_mse = RMSEP(model_pcr)
+ncomp_pcr = which.min(cv_mse$val[1,,]) - 1
+ncomp_pcr
+```
+
+    ## 159 comps 
+    ##       159
+
+  - Now, calculate the MSE of the PCR model:
+
+<!-- end list -->
+
+``` r
+pcr_pred = predict(model_pcr, newdata = test_df,
+ncomp = ncomp_pcr)
+mse_pcr = mean((pcr_pred - test_df$Solubility)^2)
+```
+
+  - Therefore, the MSE of this PCR model, using 159 components is
+    **0.5467**.
+
+<!-- end list -->
+
+5)  Which model will you choose for predicting solubility?
+
+<!-- end list -->
+
+  - Generate table to compare MSE values of models:
+
+<!-- end list -->
+
+``` r
+tibble(
+  Model = c("Linear", "Ridge", "Lasso", "PCR"),
+  MSE = c(mse_lm[1], mse_ridge[1], mse_lasso[1], mse_pcr[1])
+) %>% 
+  knitr::kable()
+```
+
+| Model  |       MSE |
+| :----- | --------: |
+| Linear | 0.5558898 |
+| Ridge  | 0.5112081 |
+| Lasso  | 0.4949164 |
+| PCR    | 0.5466861 |
+
+  - Therefore, I would choose the lasso model for predicting solubility
+    because it gives the lowest MSE using the testing data.
